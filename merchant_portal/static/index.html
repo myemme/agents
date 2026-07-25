@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Merchant Services Portal</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">◈</span>
+      <div>
+        <div class="brand-name">Acquiring Services Portal</div>
+        <div class="brand-sub">Value-added services · self-serve</div>
+      </div>
+    </div>
+    <div class="clock">
+      <div class="clock-label">Simulated date</div>
+      <div class="clock-date" id="clock-date">—</div>
+      <div class="clock-controls">
+        <button class="btn btn-ghost" data-advance="7">+7 days</button>
+        <button class="btn btn-ghost" data-advance="30">+30 days</button>
+        <button class="btn btn-ghost" id="reset-btn" title="Clear all subscriptions and reset the clock">Reset demo</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <p class="lede">
+      Try any value-added service free for its trial period — no charge. Cancel anytime during the
+      trial and you're never billed. If you keep it, the trial automatically becomes a paid monthly
+      subscription when it ends. Use the clock controls above to fast-forward and watch a trial convert.
+    </p>
+
+    <section class="summary">
+      <div class="stat">
+        <div class="stat-value" id="stat-trials">0</div>
+        <div class="stat-label">Active trials</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="stat-active">0</div>
+        <div class="stat-label">Paid subscriptions</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="stat-spend">$0</div>
+        <div class="stat-label">Projected monthly spend</div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title">Your subscriptions</h2>
+      <div id="subscriptions" class="cards"></div>
+      <p id="subs-empty" class="empty">You haven't started any trials yet. Pick a service below to get started.</p>
+    </section>
+
+    <section>
+      <h2 class="section-title">Available services</h2>
+      <div id="catalog" class="cards"></div>
+    </section>
+  </main>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
