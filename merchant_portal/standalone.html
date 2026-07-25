@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="color-scheme" content="light dark" />
+<title>Merchant Services Portal</title>
+</head>
+<body>
+<style>
+  :root {
+    color-scheme: light dark;
+    /* Neutrals biased slightly blue so they read as chosen, not defaulted */
+    --bg: #f7f6f2;
+    --panel: #ffffff;
+    --panel-2: #f0efe9;
+    --border: #e3e1d8;
+    --text: #1b2230;
+    --muted: #67707f;
+    --accent: #0d9488;         /* settlement teal */
+    --accent-ink: #ffffff;
+    --trial: #b7791f;          /* amber — trial state */
+    --trial-bg: rgba(224, 160, 42, 0.12);
+    --active: #0f766e;         /* teal — paid/active */
+    --active-bg: rgba(15, 118, 110, 0.12);
+    --cancel: #6b7280;         /* slate — cancelled */
+    --cancel-bg: rgba(107, 114, 128, 0.12);
+    --danger: #c0362c;
+    --shadow: 0 6px 22px rgba(20, 30, 50, 0.08);
+    --radius: 16px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1420;
+      --panel: #151d2c;
+      --panel-2: #1c2637;
+      --border: #283349;
+      --text: #e9edf5;
+      --muted: #94a1b8;
+      --accent: #14b8a6;
+      --accent-ink: #04231f;
+      --trial: #e6b34d;
+      --trial-bg: rgba(224, 160, 42, 0.16);
+      --active: #34d3bf;
+      --active-bg: rgba(20, 184, 166, 0.16);
+      --cancel: #8a94a8;
+      --cancel-bg: rgba(138, 148, 168, 0.16);
+      --danger: #ff7b70;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+  }
+  /* Explicit toggle overrides win in both directions */
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --bg: #f7f6f2; --panel: #ffffff; --panel-2: #f0efe9; --border: #e3e1d8;
+    --text: #1b2230; --muted: #67707f; --accent: #0d9488; --accent-ink: #ffffff;
+    --trial: #b7791f; --trial-bg: rgba(224,160,42,0.12); --active: #0f766e;
+    --active-bg: rgba(15,118,110,0.12); --cancel: #6b7280; --cancel-bg: rgba(107,114,128,0.12);
+    --danger: #c0362c; --shadow: 0 6px 22px rgba(20,30,50,0.08);
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0d1420; --panel: #151d2c; --panel-2: #1c2637; --border: #283349;
+    --text: #e9edf5; --muted: #94a1b8; --accent: #14b8a6; --accent-ink: #04231f;
+    --trial: #e6b34d; --trial-bg: rgba(224,160,42,0.16); --active: #34d3bf;
+    --active-bg: rgba(20,184,166,0.16); --cancel: #8a94a8; --cancel-bg: rgba(138,148,168,0.16);
+    --danger: #ff7b70; --shadow: 0 10px 30px rgba(0,0,0,0.4);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "SF Pro Text", Segoe UI, Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 16px 96px; }
+
+  /* Header ----------------------------------------------------------------- */
+  .topbar {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px 12px;
+  }
+  .topbar-inner { max-width: 720px; margin: 0 auto; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-mark {
+    width: 42px; height: 42px; flex: none; border-radius: 12px;
+    display: grid; place-items: center; font-size: 20px;
+    background: var(--accent); color: var(--accent-ink);
+    box-shadow: var(--shadow);
+  }
+  .brand-name { font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
+  .brand-sub { color: var(--muted); font-size: 12px; }
+  .theme-btn {
+    margin-left: auto; background: var(--panel-2); border: 1px solid var(--border);
+    color: var(--text); width: 40px; height: 40px; border-radius: 11px; font-size: 17px;
+    cursor: pointer;
+  }
+  .clockbar {
+    display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap;
+  }
+  .clock-face {
+    display: flex; flex-direction: column; margin-right: auto;
+  }
+  .clock-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+  }
+  .clock-date { font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
+
+  /* Buttons ---------------------------------------------------------------- */
+  .btn {
+    font: inherit; font-weight: 600; font-size: 14px;
+    border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+    padding: 10px 14px; border-radius: 12px; cursor: pointer;
+    min-height: 44px; display: inline-flex; align-items: center; justify-content: center;
+    gap: 6px; -webkit-tap-highlight-color: transparent; transition: transform .05s, background .15s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-sm { min-height: 38px; padding: 7px 12px; font-size: 13px; }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .btn-danger { background: transparent; color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, transparent); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* Intro ------------------------------------------------------------------ */
+  .lede { color: var(--muted); font-size: 14.5px; margin: 20px 2px 22px; }
+  .lede b { color: var(--text); font-weight: 600; }
+
+  /* Stats ------------------------------------------------------------------ */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .stat {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 12px; box-shadow: var(--shadow);
+  }
+  .stat-value { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .stat-label { color: var(--muted); font-size: 11.5px; margin-top: 3px; }
+
+  /* Sections --------------------------------------------------------------- */
+  .section-title {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); font-weight: 700; margin: 30px 2px 12px;
+  }
+  .cards { display: flex; flex-direction: column; gap: 12px; }
+  .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 560px) { .grid { grid-template-columns: 1fr 1fr; } }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 10px;
+  }
+  .card-head { display: flex; gap: 12px; align-items: flex-start; }
+  .card-emoji {
+    width: 44px; height: 44px; flex: none; border-radius: 12px; display: grid; place-items: center;
+    font-size: 22px; background: var(--panel-2); border: 1px solid var(--border);
+  }
+  .card-title { font-weight: 700; font-size: 15.5px; letter-spacing: -0.01em; }
+  .card-cat { color: var(--muted); font-size: 12px; }
+  .card-desc { color: var(--muted); font-size: 13.5px; }
+  .price { font-size: 13.5px; color: var(--muted); }
+  .price b { color: var(--text); }
+  .meta { font-size: 13.5px; color: var(--muted); }
+  .meta b { color: var(--text); font-variant-numeric: tabular-nums; }
+  .countdown { color: var(--trial); font-weight: 700; }
+  .card-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 2px; }
+
+  .badge {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+    padding: 4px 10px; border-radius: 999px;
+  }
+  .badge-trial { color: var(--trial); background: var(--trial-bg); }
+  .badge-active { color: var(--active); background: var(--active-bg); }
+  .badge-cancelled { color: var(--cancel); background: var(--cancel-bg); }
+
+  .empty { color: var(--muted); font-size: 14px; padding: 6px 2px; }
+  .hidden { display: none !important; }
+
+  /* Toasts ----------------------------------------------------------------- */
+  .toasts {
+    position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 50;
+    display: flex; flex-direction: column; gap: 10px; align-items: center; pointer-events: none;
+  }
+  .toast {
+    width: 100%; max-width: 480px; pointer-events: auto;
+    background: var(--panel); border: 1px solid var(--border);
+    border-left: 4px solid var(--accent); border-radius: 12px; padding: 12px 14px;
+    box-shadow: 0 12px 32px rgba(0,0,0,.28); animation: rise .22s ease;
+  }
+  .toast.convert { border-left-color: var(--trial); }
+  .toast.error { border-left-color: var(--danger); }
+  .toast-title { font-weight: 700; font-size: 14px; }
+  .toast-body { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .toast, .btn { animation: none; transition: none; } }
+</style>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark">◈</div>
+      <div>
+        <div class="brand-name">Acquiring Services Portal</div>
+        <div class="brand-sub">Value-added services · self-serve</div>
+      </div>
+      <button class="theme-btn" id="theme-btn" aria-label="Toggle light or dark theme">◐</button>
+    </div>
+    <div class="clockbar">
+      <div class="clock-face">
+        <span class="clock-label">Simulated date</span>
+        <span class="clock-date" id="clock-date">—</span>
+      </div>
+      <button class="btn btn-sm" data-advance="7">+7 days</button>
+      <button class="btn btn-sm" data-advance="30">+30 days</button>
+      <button class="btn btn-sm" id="reset-btn">Reset</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <p class="lede">
+    Try any value-added service <b>free for its trial period</b> — no charge. Cancel anytime during
+    the trial and you're never billed. Keep it, and the trial <b>automatically becomes a paid monthly
+    subscription</b> when it ends. Tap the date buttons above to fast-forward and watch a trial convert.
+  </p>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-value" id="stat-trials">0</div><div class="stat-label">Active trials</div></div>
+    <div class="stat"><div class="stat-value" id="stat-active">0</div><div class="stat-label">Paid subs</div></div>
+    <div class="stat"><div class="stat-value" id="stat-spend">$0</div><div class="stat-label">Monthly spend</div></div>
+  </div>
+
+  <div class="section-title">Your subscriptions</div>
+  <div id="subscriptions" class="cards"></div>
+  <p id="subs-empty" class="empty">No trials yet — pick a service below to get started.</p>
+
+  <div class="section-title">Available services</div>
+  <div id="catalog" class="grid"></div>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+  var STORE_KEY = "merchant_portal_v1";
+  var DAY = 86400000;
+
+  var CATALOG = [
+    { id:"fraud-shield", name:"Fraud & Risk Shield", category:"Risk", emoji:"🛡️", trial_days:30, monthly_price:49,
+      description:"Real-time transaction scoring and rules to block fraud before it settles." },
+    { id:"analytics-dashboard", name:"Analytics & Insights Dashboard", category:"Insights", emoji:"📊", trial_days:14, monthly_price:29,
+      description:"Live sales, settlement and customer analytics across all your terminals." },
+    { id:"chargeback-manager", name:"Chargeback Manager", category:"Disputes", emoji:"⚖️", trial_days:30, monthly_price:39,
+      description:"Automated dispute alerts and one-click evidence submission to win chargebacks." },
+    { id:"loyalty-rewards", name:"Loyalty & Rewards", category:"Growth", emoji:"🎁", trial_days:14, monthly_price:25,
+      description:"Launch a branded points & rewards program that drives repeat customers." },
+    { id:"smart-invoicing", name:"Smart Invoicing", category:"Billing", emoji:"🧾", trial_days:30, monthly_price:19,
+      description:"Send digital invoices with pay-by-link and automatic reconciliation." },
+    { id:"cashflow-insights", name:"Cashflow Advance Insights", category:"Capital", emoji:"💵", trial_days:14, monthly_price:35,
+      description:"Forecast cashflow and see pre-qualified merchant cash advance offers." }
+  ];
+  var SVC = {}; CATALOG.forEach(function (s) { SVC[s.id] = s; });
+
+  // ---- State (localStorage) ------------------------------------------------
+  function load() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return { offset_days: 0, subs: [] };
+  }
+  function save(st) { try { localStorage.setItem(STORE_KEY, JSON.stringify(st)); } catch (e) {} }
+  var state = load();
+
+  function effectiveNow() { return Date.now() + state.offset_days * DAY; }
+  function uid() { return "s-" + Math.random().toString(36).slice(2) + Date.now().toString(36); }
+
+  // ---- Lifecycle -----------------------------------------------------------
+  // Convert expired trials to paid. Returns the list that just converted.
+  function runConversions() {
+    var now = effectiveNow(), converted = [];
+    state.subs.forEach(function (sub) {
+      if (sub.status !== "trial") return;
+      if (now >= sub.trial_ends_at) {
+        var svc = SVC[sub.service_id];
+        sub.status = "active";
+        sub.converted_at = now;
+        sub.next_bill_date = sub.trial_ends_at + 30 * DAY;
+        converted.push(svc);
+      }
+    });
+    if (converted.length) save(state);
+    return converted;
+  }
+
+  function startTrial(id) {
+    var svc = SVC[id];
+    var existing = state.subs.find(function (s) {
+      return s.service_id === id && (s.status === "trial" || s.status === "active");
+    });
+    if (existing) { toast("Already subscribed", "You already have an active subscription for " + svc.name + ".", "error"); return; }
+    var now = effectiveNow();
+    state.subs.push({
+      id: uid(), service_id: id, status: "trial",
+      started_at: now, trial_ends_at: now + svc.trial_days * DAY,
+      converted_at: null, cancelled_at: null, next_bill_date: null
+    });
+    save(state);
+    toast("Free trial started", svc.name + " — free for " + svc.trial_days + " days.", "");
+    render();
+  }
+
+  function cancelSub(subId) {
+    var sub = state.subs.find(function (s) { return s.id === subId; });
+    if (!sub || sub.status === "cancelled") return;
+    var wasTrial = sub.status === "trial";
+    sub.status = "cancelled";
+    sub.cancelled_at = effectiveNow();
+    sub.next_bill_date = null;
+    save(state);
+    toast("Subscription cancelled", wasTrial ? "Cancelled during the trial — you were never charged." : "You won't be billed going forward.", "");
+    render();
+  }
+
+  function advance(days) {
+    state.offset_days += days;
+    save(state);
+    var converted = runConversions();
+    converted.forEach(function (svc) {
+      toast("Trial converted to paid", svc.name + " is now a paid subscription at " + money(svc.monthly_price) + "/mo.", "convert");
+    });
+    render();
+  }
+
+  function resetDemo() {
+    state = { offset_days: 0, subs: [] };
+    save(state);
+    toast("Demo reset", "All subscriptions cleared and the clock is back to today.", "");
+    render();
+  }
+
+  // ---- Helpers -------------------------------------------------------------
+  function money(n) { return "$" + Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 2 }); }
+  function fmtDate(ms) {
+    if (!ms) return "—";
+    return new Date(ms).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+  }
+  function daysLeft(ms) { return Math.max(0, Math.ceil((ms - effectiveNow()) / DAY)); }
+  function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+
+  // ---- Toasts --------------------------------------------------------------
+  function toast(title, body, kind) {
+    var t = el("div", "toast " + (kind || ""));
+    t.appendChild(el("div", "toast-title", "")).textContent = title;
+    t.appendChild(el("div", "toast-body", "")).textContent = body;
+    document.getElementById("toasts").appendChild(t);
+    setTimeout(function () { t.remove(); }, 5200);
+  }
+
+  // ---- Render --------------------------------------------------------------
+  function render() {
+    runConversions();
+    var now = effectiveNow();
+    document.getElementById("clock-date").textContent = fmtDate(now);
+
+    var trials = state.subs.filter(function (s) { return s.status === "trial"; });
+    var active = state.subs.filter(function (s) { return s.status === "active"; });
+    var spend = active.reduce(function (a, s) { return a + SVC[s.service_id].monthly_price; }, 0);
+    document.getElementById("stat-trials").textContent = trials.length;
+    document.getElementById("stat-active").textContent = active.length;
+    document.getElementById("stat-spend").textContent = money(spend);
+
+    // Subscriptions (newest first)
+    var wrap = document.getElementById("subscriptions");
+    wrap.innerHTML = "";
+    var ordered = state.subs.slice().sort(function (a, b) { return b.started_at - a.started_at; });
+    document.getElementById("subs-empty").classList.toggle("hidden", ordered.length > 0);
+
+    ordered.forEach(function (sub) {
+      var svc = SVC[sub.service_id];
+      var card = el("div", "card");
+      var head = el("div", "card-head");
+      head.appendChild(el("div", "card-emoji", svc.emoji));
+      var titles = el("div");
+      titles.appendChild(el("div", "card-title")).textContent = svc.name;
+      titles.appendChild(el("div", "card-cat")).textContent = svc.category;
+      head.appendChild(titles);
+      card.appendChild(head);
+
+      if (sub.status === "trial") {
+        var d = daysLeft(sub.trial_ends_at);
+        card.appendChild(el("div", "meta", '<span class="countdown">' + d + " day" + (d === 1 ? "" : "s") + " left</span> in free trial"));
+        card.appendChild(el("div", "meta", "Trial ends <b>" + fmtDate(sub.trial_ends_at) + "</b>"));
+        card.appendChild(el("div", "meta", "Then <b>" + money(svc.monthly_price) + "/mo</b> unless cancelled"));
+      } else if (sub.status === "active") {
+        card.appendChild(el("div", "meta", "Paid subscription · <b>" + money(svc.monthly_price) + "/mo</b>"));
+        card.appendChild(el("div", "meta", "Next bill <b>" + fmtDate(sub.next_bill_date) + "</b>"));
+      } else {
+        card.appendChild(el("div", "meta", "Cancelled " + fmtDate(sub.cancelled_at)));
+      }
+
+      var foot = el("div", "card-foot");
+      foot.appendChild(el("span", "badge badge-" + sub.status)).textContent = sub.status;
+      if (sub.status !== "cancelled") {
+        var cbtn = el("button", "btn btn-sm btn-danger");
+        cbtn.textContent = sub.status === "trial" ? "Cancel trial" : "Cancel";
+        cbtn.setAttribute("data-cancel", sub.id);
+        foot.appendChild(cbtn);
+      }
+      card.appendChild(foot);
+      wrap.appendChild(card);
+    });
+
+    // Catalog
+    var cat = document.getElementById("catalog");
+    cat.innerHTML = "";
+    var activeIds = {};
+    state.subs.forEach(function (s) { if (s.status === "trial" || s.status === "active") activeIds[s.service_id] = true; });
+
+    CATALOG.forEach(function (svc) {
+      var subscribed = !!activeIds[svc.id];
+      var card = el("div", "card");
+      var head = el("div", "card-head");
+      head.appendChild(el("div", "card-emoji", svc.emoji));
+      var titles = el("div");
+      titles.appendChild(el("div", "card-title")).textContent = svc.name;
+      titles.appendChild(el("div", "card-cat")).textContent = svc.category;
+      head.appendChild(titles);
+      card.appendChild(head);
+      card.appendChild(el("div", "card-desc")).textContent = svc.description;
+      card.appendChild(el("div", "price", "Free for <b>" + svc.trial_days + " days</b>, then <b>" + money(svc.monthly_price) + "/mo</b>"));
+      var foot = el("div", "card-foot");
+      foot.appendChild(el("span"));
+      var btn = el("button", "btn btn-sm btn-primary");
+      btn.textContent = subscribed ? "Subscribed" : "Start free trial";
+      btn.disabled = subscribed;
+      if (!subscribed) btn.setAttribute("data-start", svc.id);
+      foot.appendChild(btn);
+      card.appendChild(foot);
+      cat.appendChild(card);
+    });
+  }
+
+  // ---- Theme ---------------------------------------------------------------
+  var themeBtn = document.getElementById("theme-btn");
+  themeBtn.addEventListener("click", function () {
+    var root = document.documentElement;
+    var cur = root.getAttribute("data-theme");
+    if (!cur) {
+      cur = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    root.setAttribute("data-theme", cur === "dark" ? "light" : "dark");
+  });
+
+  // ---- Events --------------------------------------------------------------
+  document.addEventListener("click", function (e) {
+    var s = e.target.closest("[data-start]"); if (s) return startTrial(s.getAttribute("data-start"));
+    var c = e.target.closest("[data-cancel]"); if (c) return cancelSub(c.getAttribute("data-cancel"));
+    var a = e.target.closest("[data-advance]"); if (a) return advance(Number(a.getAttribute("data-advance")));
+    if (e.target.closest("#reset-btn")) return resetDemo();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

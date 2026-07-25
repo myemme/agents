@@ -41,6 +41,14 @@ you're not using `uv`, `python -m uvicorn merchant_portal.main:app --port 8000` 
 3. Start another trial, then **Cancel** it before advancing — it becomes **Cancelled** and is never
    billed even after the clock moves forward.
 
+## Run it on a phone (no server)
+
+`standalone.html` is the **same portal in a single self-contained file** — all the trial → paid logic
+runs in the browser with `localStorage`, so there's no backend to host. Open it directly on any device,
+including an iPhone/iPad: email/AirDrop the file to yourself and open it in Safari, or double-click it on
+a computer. State persists per-device; use **Reset** in the header to start over. This is the mobile-first
+build (single column, large tap targets, light/dark toggle).
+
 ## API
 
 | Method & path                              | Purpose                                             |
